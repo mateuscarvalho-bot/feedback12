@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Med Study - App de Estudos Médicos</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>Med Study</h1>
+      <p>Sistema de Revisão Espaçada para Medicina</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <button class="nav-btn nav-btn--active" data-tab="dashboard">Dashboard</button>
+      <button class="nav-btn" data-tab="cadastro">Cadastro</button>
+      <button class="nav-btn" data-tab="revisoes">Revisões</button>
+      <button class="nav-btn" data-tab="historico">Histórico</button>
+      <button class="nav-btn" data-tab="configuracoes">Configurações</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Dashboard Tab -->
+      <div class="tab-content tab-content--active" data-tab="dashboard">
+        <div class="dashboard">
+          <div class="goals-section">
+            <div class="goal-card">
+              <h3>Meta Diária</h3>
+              <div class="goal-progress">
+                <div class="goal-progress-bar">
+                  <div class="goal-progress-fill" id="daily-progress-fill"></div>
+                </div>
+                <div class="goal-text" id="daily-goal-text">0 / 3 estudos</div>
+              </div>
+            </div>
+            <div class="streak-card">
+              <h3>Sequência Atual</h3>
+              <div class="streak-number" id="current-streak">0</div>
+              <div class="streak-label">dias consecutivos</div>
+            </div>
+            <div class="streak-card">
+              <h3>Maior Sequência</h3>
+              <div class="streak-number streak-number--secondary" id="longest-streak">0</div>
+              <div class="streak-label">dias consecutivos</div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Total de Estudos</h3>
+              <div class="stat-number" id="total-studies">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Revisões Atrasadas</h3>
+              <div class="stat-number stat-number--danger" id="overdue-reviews">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Revisões Hoje</h3>
+              <div class="stat-number stat-number--warning" id="today-reviews">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Performance Média</h3>
+              <div class="stat-number stat-number--success" id="avg-performance">0%</div>
+            </div>
+            <div class="stat-card">
+              <h3>Tempo Total</h3>
+              <div class="stat-number" id="total-time">0h</div>
+            </div>
+            <div class="stat-card">
+              <h3>Tempo Médio</h3>
+              <div class="stat-number" id="avg-time">0min</div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3>Disciplinas Estudadas</h3>
+              <div style="position: relative; height: 300px;">
+                <canvas id="disciplines-chart"></canvas>
+              </div>
+            </div>
+            <div class="chart-container">
+              <h3>Performance ao Longo do Tempo</h3>
+              <div style="position: relative; height: 300px;">
+                <canvas id="performance-chart"></canvas>
+              </div>
+            </div>
+            <div class="chart-container">
+              <h3>Atividade dos Últimos 30 Dias</h3>
+              <div class="heatmap" id="activity-heatmap"></div>
+            </div>
+            <div class="chart-container">
+              <h3>Progresso da Sequência</h3>
+              <div style="position: relative; height: 300px;">
+                <canvas id="streak-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cadastro Tab -->
+      <div class="tab-content" data-tab="cadastro">
+        <div class="form-container">
+          <h2>Cadastrar Novo Estudo</h2>
+          <form id="study-form" class="study-form">
+            
+            <!-- Timer Section -->
+            <div class="timer-section">
+              <h3>Timer de Estudos (Opcional)</h3>
+              <div class="timer-display" id="timer-display">00:00:00</div>
+              <div class="timer-controls">
+                <button type="button" id="timer-start" class="btn btn--primary btn--sm">Iniciar</button>
+                <button type="button" id="timer-pause" class="btn btn--secondary btn--sm" disabled>Pausar</button>
+                <button type="button" id="timer-stop" class="btn btn--outline btn--sm" disabled>Parar</button>
+                <button type="button" id="timer-reset" class="btn btn--outline btn--sm">Reset</button>
+              </div>
+            </div>
+
+            <!-- Disciplina -->
+            <div class="form-group">
+              <label for="discipline" class="form-label">Disciplina</label>
+              <select id="discipline" name="discipline" class="form-control" required>
+                <option value="">Selecione uma disciplina</option>
+              </select>
+            </div>
+
+            <!-- Tópico -->
+            <div class="form-group">
+              <label for="topic" class="form-label">Tópico</label>
+              <select id="topic" name="topic" class="form-control" required>
+                <option value="">Selecione primeiro uma disciplina</option>
+              </select>
+            </div>
+
+            <!-- Campo customizado para Outro -->
+            <div class="form-group hidden" id="custom-topic-group">
+              <label for="custom-topic" class="form-label">Digite o Tópico</label>
+              <input type="text" id="custom-topic" name="customTopic" class="form-control" placeholder="Digite o tópico...">
+            </div>
+
+            <!-- Questões -->
+            <div class="form-group">
+              <label for="total-questions" class="form-label">Total de Questões</label>
+              <input type="number" id="total-questions" name="totalQuestions" class="form-control" min="1" required>
+            </div>
+
+            <div class="form-group">
+              <label for="correct-answers" class="form-label">Questões Corretas</label>
+              <input type="number" id="correct-answers" name="correctAnswers" class="form-control" min="0" required>
+            </div>
+
+            <!-- Data -->
+            <div class="form-group">
+              <label for="study-date" class="form-label">Data do Estudo</label>
+              <input type="date" id="study-date" name="studyDate" class="form-control" required>
+            </div>
+
+            <!-- Tempo -->
+            <div class="form-group">
+              <label for="study-time-manual" class="form-label">Tempo de Estudo (minutos)</label>
+              <input type="number" id="study-time-manual" name="studyTime" class="form-control" min="1" placeholder="Tempo em minutos (preenchido automaticamente se usar timer)">
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group">
+              <label for="observations" class="form-label">Observações (opcional)</label>
+              <textarea id="observations" name="observations" class="form-control" rows="3" placeholder="Observações sobre o estudo..."></textarea>
+            </div>
+
+            <!-- Botão -->
+            <button type="submit" class="btn btn--primary btn--full-width">
+              Cadastrar Estudo
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Revisões Tab -->
+      <div class="tab-content" data-tab="revisoes">
+        <div class="reviews-container">
+          <h2>Revisões Programadas</h2>
+          <div class="reviews-section">
+            <h3 class="reviews-section-title reviews-section-title--danger">Atrasadas</h3>
+            <div id="overdue-reviews-list" class="reviews-list"></div>
+          </div>
+          <div class="reviews-section">
+            <h3 class="reviews-section-title reviews-section-title--warning">Hoje</h3>
+            <div id="today-reviews-list" class="reviews-list"></div>
+          </div>
+          <div class="reviews-section">
+            <h3 class="reviews-section-title">Próximas</h3>
+            <div id="upcoming-reviews-list" class="reviews-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico Tab -->
+      <div class="tab-content" data-tab="historico">
+        <div class="history-container">
+          <h2>Histórico de Estudos</h2>
+          <div class="advanced-filters">
+            <div class="filter-row">
+              <input type="text" id="history-search" class="form-control" placeholder="Buscar por tópico, disciplina ou observações...">
+              <select id="history-discipline-filter" class="form-control">
+                <option value="">Todas as disciplinas</option>
+              </select>
+            </div>
+            <div class="filter-row">
+              <input type="date" id="date-from" class="form-control" placeholder="Data inicial">
+              <input type="date" id="date-to" class="form-control" placeholder="Data final">
+              <select id="performance-filter" class="form-control">
+                <option value="">Todas as performances</option>
+                <option value="90-100">Excelente (90-100%)</option>
+                <option value="80-89">Boa (80-89%)</option>
+                <option value="70-79">Regular (70-79%)</option>
+                <option value="60-69">Fraca (60-69%)</option>
+                <option value="0-59">Insuficiente (0-59%)</option>
+              </select>
+            </div>
+            <div class="filter-info">
+              <span id="results-count">0 estudos encontrados</span>
+              <button id="clear-filters" class="btn btn--outline btn--sm">Limpar Filtros</button>
+            </div>
+          </div>
+          <div id="studies-list" class="studies-list"></div>
+        </div>
+      </div>
+
+      <!-- Configurações Tab -->
+      <div class="tab-content" data-tab="configuracoes">
+        <div class="settings-container">
+          <h2>Configurações</h2>
+          <div class="settings-section">
+            <h3>Metas de Estudo</h3>
+            <div class="form-group">
+              <label for="daily-goal" class="form-label">Meta diária de estudos</label>
+              <input type="number" id="daily-goal" class="form-control" min="1" max="20" value="3">
+              <small>Número de estudos que você quer completar por dia</small>
+            </div>
+            <button id="save-goals" class="btn btn--primary">Salvar Meta</button>
+          </div>
+          <div class="settings-section">
+            <h3>Disciplinas Customizadas</h3>
+            <form id="custom-discipline-form" class="custom-discipline-form">
+              <div class="form-group">
+                <label for="custom-discipline-name" class="form-label">Nome da Disciplina</label>
+                <input type="text" id="custom-discipline-name" class="form-control" placeholder="Ex: Infectologia" required>
+              </div>
+              <div class="form-group">
+                <label for="custom-discipline-topics" class="form-label">Tópicos (separados por vírgula)</label>
+                <textarea id="custom-discipline-topics" class="form-control" rows="3" placeholder="Ex: HIV, Tuberculose, Meningites" required></textarea>
+              </div>
+              <button type="submit" class="btn btn--primary">Adicionar Disciplina</button>
+            </form>
+          </div>
+          <div class="settings-section">
+            <h3>Disciplinas Cadastradas</h3>
+            <div id="disciplines-list" class="disciplines-list"></div>
+          </div>
+          <div class="settings-section">
+            <h3>Backup e Dados</h3>
+            <div class="backup-section">
+              <h4>Exportar Dados</h4>
+              <p>Faça backup dos seus dados de estudo.</p>
+              <div class="backup-actions">
+                <button id="export-data" class="btn btn--outline">📥 Download JSON</button>
+                <button id="copy-data" class="btn btn--primary">📋 Copiar Dados</button>
+                <button id="show-data" class="btn btn--secondary">👁️ Ver Dados</button>
+              </div>
+              <div id="data-display" class="data-display hidden">
+                <h5>Seus dados de backup:</h5>
+                <textarea id="data-textarea" class="form-control" rows="10" readonly></textarea>
+                <div class="data-actions">
+                  <button id="select-all-data" class="btn btn--outline btn--sm">Selecionar Tudo</button>
+                  <button id="hide-data" class="btn btn--secondary btn--sm">Ocultar</button>
+                </div>
+              </div>
+            </div>
+            <div class="backup-section">
+              <h4>Importar Dados</h4>
+              <div class="backup-actions">
+                <button id="import-data" class="btn btn--outline">📤 Importar Dados</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+                <button id="clear-data" class="btn btn--outline" style="color: var(--color-error);">🗑️ Limpar Todos os Dados</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modal for confirmation -->
+    <div id="confirm-modal" class="modal hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
